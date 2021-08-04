@@ -287,13 +287,11 @@ func (e EventRecordsRaw) DecodeEventRecords(m *Metadata, t interface{}) error {
 		return err
 	}
 
-	// log.Debug(fmt.Sprintf("found %v events", n))
-	fmt.Printf("================ found %v events", n)
+	log.Debug(fmt.Sprintf("found %v events", n))
 
 	// iterate over events
 	for i := uint64(0); i < n.Uint64(); i++ {
-		// log.Debug(fmt.Sprintf("decoding event #%v", i))
-		fmt.Printf("================ decoding event #%v\n", i)
+		log.Debug(fmt.Sprintf("decoding event #%v", i))
 
 		// decode Phase
 		phase := Phase{}
@@ -309,20 +307,16 @@ func (e EventRecordsRaw) DecodeEventRecords(m *Metadata, t interface{}) error {
 			return fmt.Errorf("unable to decode EventID for event #%v: %v", i, err)
 		}
 
-		// log.Debug(fmt.Sprintf("event #%v has EventID %v", i, id))
-		fmt.Printf("================ event #%v has EventID %v\n", i, id)
+		log.Debug(fmt.Sprintf("event #%v has EventID %v", i, id))
 
 		// ask metadata for method & event name for event
 		moduleName, eventName, err := m.FindEventNamesForEventID(id)
-		fmt.Printf("================ module - event: %v-%v\n", moduleName, eventName)
 		// moduleName, eventName, err := "System", "ExtrinsicSuccess", nil
 		if err != nil {
-			fmt.Printf("================ FindEventNamesForEventID return failed\n")
 			return err
 		}
 
-		// log.Debug(fmt.Sprintf("event #%v is in module %v with event name %v", i, moduleName, eventName))
-		fmt.Printf("================ event #%v is in module %v with event name %v\n", i, moduleName, eventName)
+		log.Debug(fmt.Sprintf("event #%v is in module %v with event name %v", i, moduleName, eventName))
 
 		// check whether name for eventID exists in t
 		field := val.FieldByName(fmt.Sprintf("%v_%v", moduleName, eventName))
@@ -441,7 +435,6 @@ func (d *DispatchError) Decode(decoder scale.Decoder) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("================ DispatchError decode, error = %v\n", d.Error)
 
 	// Enum index 3 for Module Error
 	if d.Error == 3 {
