@@ -1689,13 +1689,13 @@ type EventMultisigCancelled struct {
 
 type EventParachainSystemValidationFunctionStored struct {
 	Phase  Phase
-	Height BlockNumber
+	Height U32
 	Topics []Hash
 }
 
 type EventParachainSystemValidationFunctionApplied struct {
 	Phase  Phase
-	Height BlockNumber
+	Height U32
 	Topics []Hash
 }
 
