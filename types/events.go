@@ -1609,7 +1609,7 @@ type EventMultisigNewMultisig struct {
 // TimePoint is a global extrinsic index, formed as the extrinsic index within a block,
 // together with that block's height.
 type TimePoint struct {
-	Height BlockNumber
+	Height U32
 	Index  U32
 }
 
