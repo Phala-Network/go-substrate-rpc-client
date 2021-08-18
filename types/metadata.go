@@ -172,6 +172,31 @@ func (m Metadata) Encode(encoder scale.Encoder) error {
 	return err
 }
 
+func (m *Metadata) FindConstantValue(module string, constantName string) ([]byte, error) {
+	txtModule := Text(module)
+	txtConstantName := Text(constantName)
+	switch {
+	case m.IsMetadataV4:
+		return m.AsMetadataV4.FindConstantValue(txtModule, txtConstantName)
+	case m.IsMetadataV7:
+		return m.AsMetadataV7.FindConstantValue(txtModule, txtConstantName)
+	case m.IsMetadataV8:
+		return m.AsMetadataV8.FindConstantValue(txtModule, txtConstantName)
+	case m.IsMetadataV9:
+		return m.AsMetadataV9.FindConstantValue(txtModule, txtConstantName)
+	case m.IsMetadataV10:
+		return m.AsMetadataV10.FindConstantValue(txtModule, txtConstantName)
+	case m.IsMetadataV11:
+		return m.AsMetadataV11.FindConstantValue(txtModule, txtConstantName)
+	case m.IsMetadataV12:
+		return m.AsMetadataV12.FindConstantValue(txtModule, txtConstantName)
+	case m.IsMetadataV13:
+		return m.AsMetadataV13.FindConstantValue(txtModule, txtConstantName)
+	default:
+		return nil, fmt.Errorf("unsupported metadata version")
+	}
+}
+
 func (m *Metadata) FindCallIndex(call string) (CallIndex, error) {
 	switch {
 	case m.IsMetadataV4:

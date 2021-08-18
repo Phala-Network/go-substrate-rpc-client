@@ -102,7 +102,7 @@ func Example_listenToBalanceChange() {
 	}
 
 	alice := signature.TestKeyringPairAlice.PublicKey
-	key, err := types.CreateStorageKey(meta, "System", "Account", alice, nil)
+	key, err := types.CreateStorageKey(meta, "System", "Account", alice)
 	if err != nil {
 		panic(err)
 	}
@@ -227,7 +227,7 @@ func Example_makeASimpleTransfer() {
 		panic(err)
 	}
 
-	key, err := types.CreateStorageKey(meta, "System", "Account", signature.TestKeyringPairAlice.PublicKey, nil)
+	key, err := types.CreateStorageKey(meta, "System", "Account", signature.TestKeyringPairAlice.PublicKey)
 	if err != nil {
 		panic(err)
 	}
@@ -280,7 +280,7 @@ func Example_displaySystemEvents() {
 	}
 
 	// Subscribe to system events via storage
-	key, err := types.CreateStorageKey(meta, "System", "Events", nil, nil)
+	key, err := types.CreateStorageKey(meta, "System", "Events", nil)
 	if err != nil {
 		panic(err)
 	}
@@ -331,7 +331,7 @@ func Example_displaySystemEvents() {
 			}
 			for _, e := range events.Grandpa_NewAuthorities {
 				fmt.Printf("\tGrandpa:NewAuthorities:: (phase=%#v)\n", e.Phase)
-				fmt.Printf("\t\t%v\n", e.NewAuthorities)
+				fmt.Printf("\t\t%v\n", e.AuthorityList)
 			}
 			for _, e := range events.Grandpa_Paused {
 				fmt.Printf("\tGrandpa:Paused:: (phase=%#v)\n", e.Phase)
@@ -441,7 +441,7 @@ func Example_transactionWithEvents() {
 	}
 
 	// Get the nonce for Alice
-	key, err := types.CreateStorageKey(meta, "System", "Account", signature.TestKeyringPairAlice.PublicKey, nil)
+	key, err := types.CreateStorageKey(meta, "System", "Account", signature.TestKeyringPairAlice.PublicKey)
 	if err != nil {
 		panic(err)
 	}
