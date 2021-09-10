@@ -1596,6 +1596,11 @@ type EventUtilityBatchCompleted struct {
 	Topics []Hash
 }
 
+type EventUtilityItemCompleted struct {
+	Phase  Phase
+	Topics []Hash
+}
+
 // EventUtilityNewMultisig is emitted when a new multisig operation has begun.
 // First param is the account that is approving, second is the multisig account, third is hash of the call.
 type EventMultisigNewMultisig struct {
