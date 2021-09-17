@@ -234,6 +234,7 @@ type EventRecords struct {
 	Contracts_CodeRemoved                           []EventContractsCodeRemoved                     //nolint:stylecheck,golint
 	Utility_BatchInterrupted                        []EventUtilityBatchInterrupted                  //nolint:stylecheck,golint
 	Utility_BatchCompleted                          []EventUtilityBatchCompleted                    //nolint:stylecheck,golint
+	Utility_ItemCompleted                           []EventUtilityItemCompleted                     //nolint:stylecheck,golint
 	Multisig_NewMultisig                            []EventMultisigNewMultisig                      //nolint:stylecheck,golint
 	Multisig_MultisigApproval                       []EventMultisigApproval                         //nolint:stylecheck,golint
 	Multisig_MultisigExecuted                       []EventMultisigExecuted                         //nolint:stylecheck,golint
