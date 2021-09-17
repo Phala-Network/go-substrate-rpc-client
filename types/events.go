@@ -728,13 +728,6 @@ type EventDemocracyPreimageReaped struct {
 	Topics   []Hash
 }
 
-// EventDemocracyUnlocked is emitted when an account has been unlocked successfully.
-type EventDemocracyUnlocked struct {
-	Phase     Phase
-	AccountID AccountID
-	Topics    []Hash
-}
-
 // EventDemocracyBlacklisted is emitted when A proposal has been blacklisted permanently
 type EventDemocracyBlacklisted struct {
 	Phase  Phase
