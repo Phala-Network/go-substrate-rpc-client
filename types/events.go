@@ -1613,7 +1613,7 @@ type TimePoint struct {
 
 // TaskAddress holds the location of a scheduled task that can be used to remove it
 type TaskAddress struct {
-	When  BlockNumber
+	When  U32
 	Index U32
 }
 
