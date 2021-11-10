@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/centrifuge/go-substrate-rpc-client/v3/scale"
+	"github.com/Phala-Network/go-substrate-rpc-client/v3/scale"
 )
 
 type CompactU32 U32

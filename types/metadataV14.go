@@ -6,11 +6,12 @@ import (
 	"strings"
 
 	"github.com/Phala-Network/go-substrate-rpc-client/v3/scale"
+	"github.com/Phala-Network/go-substrate-rpc-client/v3/xxhash"
 )
 
 type PortableType struct {
-	Id CompactU32
-	Ty Si1Type
+	Id   Si1LookupTypeId
+	Type Si1Type
 }
 
 type PortableRegistryV14 struct {
@@ -61,9 +62,9 @@ func (m *StorageEntryModifierV14) Decode(decoder scale.Decoder) error {
 }
 
 type StorageEntryTypeMap struct {
-	Hasher []StorageHasherV10
-	Key    Si1LookupTypeId
-	Value  Si1LookupTypeId
+	Hashers []StorageHasherV10
+	Key     Si1LookupTypeId
+	Value   Si1LookupTypeId
 }
 
 type StorageEntryTypeV14 struct {
@@ -133,7 +134,7 @@ type StorageEntryMetadataV14 struct {
 	Name     Text
 	Modifier StorageEntryModifierV14
 	Type     StorageEntryTypeV14
-	Default  Bytes
+	Fallback Bytes
 	Docs     []Text
 }
 
@@ -145,19 +146,34 @@ func (s StorageEntryMetadataV14) IsMap() bool {
 	return s.Type.IsMap
 }
 
-func (s StorageEntryMetadataV14) Hasher() ([]hash.Hash, error) {
+func (s StorageEntryMetadataV14) IsDoubleMap() bool {
+	return false
+}
+
+func (s StorageEntryMetadataV14) IsNMap() bool {
+	return false
+}
+
+func (s StorageEntryMetadataV14) Hasher() (hash.Hash, error) {
+	return xxhash.New128(nil), nil
+}
+
+func (s StorageEntryMetadataV14) Hasher2() (hash.Hash, error) {
+	return nil, fmt.Errorf("StorageEntryMetadataV14 does not implement Hasher2()")
+}
+
+func (s StorageEntryMetadataV14) Hashers() ([]hash.Hash, error) {
+	var hashes []hash.Hash
 	if s.Type.IsMap {
-		hashers := make([]hash.Hash, len(s.Type.AsMap.Hashers))
-		for i, hasher := range s.Type.AsMap.Hashers {
-			hasherFn, err := hasher.HashFunc()
+		for _, hasher := range s.Type.AsMap.Hashers {
+			h, err := hasher.HashFunc()
 			if err != nil {
 				return nil, err
 			}
-			hashers[i] = hasherFn
+			hashes = append(hashes, h)
 		}
-		return hashers, nil
 	}
-	return nil, fmt.Errorf("only Maps have Hashers")
+	return hashes, nil
 }
 
 type StorageMetadataV14 struct {
@@ -189,9 +205,9 @@ type PalletMetadataV14 struct {
 	HasStorage bool
 	Storage    StorageMetadataV14
 	HasCalls   bool
-	Calls      []PalletCallMetadataV14
+	Calls      PalletCallMetadataV14
 	HasEvents  bool
-	Events     []EventMetadataV14
+	Events     EventMetadataV14
 	Constants  []PalletConstantMetadataV14
 	HasErrors  bool
 	Errors     []PalletErrorMetadataV14
@@ -407,29 +423,35 @@ func (m *MetadataV14) FindCallIndex(call string) (CallIndex, error) {
 		if string(mod.Name) != s[0] {
 			continue
 		}
-		for ci, f := range mod.Calls {
-			if string(f.Name) == s[1] {
-				return CallIndex{mod.Index, uint8(ci)}, nil
+		callType := mod.Calls.Type
+		for _, lookUp := range m.Lookup.Types {
+			if lookUp.Id == callType {
+				if len(lookUp.Type.Def.AsVariant.Variants) > 0 {
+					for _, vars := range lookUp.Type.Def.AsVariant.Variants {
+						if string(vars.Name) == s[1] {
+							return CallIndex{uint8(mod.Index), uint8(vars.Index)}, nil
+						}
+					}
+				}
 			}
 		}
-		return CallIndex{}, fmt.Errorf("method %v not found within module %v for call %v", s[1], mod.Name, call)
 	}
 	return CallIndex{}, fmt.Errorf("module %v not found in metadata for call %v", s[0], call)
 }
 
 func (m *MetadataV14) FindEventNamesForEventID(eventID EventID) (Text, Text, error) {
-	for _, mod := range m.Pallets {
-		if !mod.HasEvents {
-			continue
-		}
-		if mod.Index != eventID[0] {
-			continue
-		}
-		if int(eventID[1]) >= len(mod.Events) {
-			return "", "", fmt.Errorf("event index %v for module %v out of range", eventID[1], mod.Name)
-		}
-		return mod.Name, mod.Events[eventID[1]].Name, nil
-	}
+	// for _, mod := range m.Pallets {
+	// 	if !mod.HasEvents {
+	// 		continue
+	// 	}
+	// 	if mod.Index != eventID[0] {
+	// 		continue
+	// 	}
+	// 	if int(eventID[1]) >= len(mod.Events) {
+	// 		return "", "", fmt.Errorf("event index %v for module %v out of range", eventID[1], mod.Name)
+	// 	}
+	// 	return mod.Name, mod.Events[eventID[1]].Name, nil
+	// }
 	return "", "", fmt.Errorf("module index %v out of range", eventID[0])
 }
 
@@ -441,10 +463,11 @@ func (m *MetadataV14) FindStorageEntryMetadata(module string, fn string) (Storag
 		if string(mod.Storage.Prefix) != module {
 			continue
 		}
-		for _, s := range mod.Storage.Items {
+		for _, s := range mod.Storage.Entries {
 			if string(s.Name) != fn {
 				continue
 			}
+
 			return s, nil
 		}
 		return nil, fmt.Errorf("storage %v not found within module %v", fn, module)
@@ -453,14 +476,14 @@ func (m *MetadataV14) FindStorageEntryMetadata(module string, fn string) (Storag
 }
 
 func (m *MetadataV14) FindConstantValue(module Text, constant Text) ([]byte, error) {
-	for _, mod := range m.Pallets {
-		if mod.Name == module {
-			value, err := mod.FindConstantValue(constant)
-			if err == nil {
-				return value, nil
-			}
-		}
-	}
+	// for _, mod := range m.Pallets {
+	// 	if mod.Name == module {
+	// 		value, err := mod.FindConstantValue(constant)
+	// 		if err == nil {
+	// 			return value, nil
+	// 		}
+	// 	}
+	// }
 	return nil, fmt.Errorf("could not find constant %s.%s", module, constant)
 }
 
