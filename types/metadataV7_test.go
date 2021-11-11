@@ -21,13 +21,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	. "github.com/Phala-Network/go-substrate-rpc-client/v3/types"
+	. "github.com/Phala Network/go-substrate-rpc-client/v3/types"
 )
 
 var exampleMetadataV7 = Metadata{
 	MagicNumber:  0x6174656d,
 	Version:      7,
-	IsMetadataV7: true,
 	AsMetadataV7: exampleRuntimeMetadataV7,
 }
 

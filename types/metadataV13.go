@@ -5,8 +5,8 @@ import (
 	"hash"
 	"strings"
 
-	"github.com/Phala-Network/go-substrate-rpc-client/v3/scale"
-	"github.com/Phala-Network/go-substrate-rpc-client/v3/xxhash"
+	"github.com/Phala Network/go-substrate-rpc-client/v3/scale"
+	"github.com/Phala Network/go-substrate-rpc-client/v3/xxhash"
 )
 
 type MetadataV13 struct {

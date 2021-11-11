@@ -19,14 +19,13 @@ package types_test
 import (
 	"testing"
 
-	. "github.com/Phala-Network/go-substrate-rpc-client/v3/types"
+	. "github.com/Phala Network/go-substrate-rpc-client/v3/types"
 	"github.com/stretchr/testify/assert"
 )
 
 var exampleMetadataV10 = Metadata{
 	MagicNumber:   0x6174656d,
 	Version:       10,
-	IsMetadataV10: true,
 	AsMetadataV10: exampleRuntimeMetadataV10,
 }
 
