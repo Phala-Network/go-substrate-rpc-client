@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/Phala Network/go-substrate-rpc-client/v3/scale"
+	"github.com/Phala-Network/go-substrate-rpc-client/v3/scale"
 )
 
 type PortableTypeV14 struct {
