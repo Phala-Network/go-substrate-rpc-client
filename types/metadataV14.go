@@ -14,6 +14,15 @@ type PortableType struct {
 	Type Si1Type
 }
 
+func (d *PortableType) Decode(decoder scale.Decoder) error {
+	err := decoder.Decode(&d.Id)
+	if err != nil {
+		return fmt.Errorf("decode Si1LookupTypeID error: %v", err)
+	}
+
+	return decoder.Decode(&d.Type)
+}
+
 type PortableRegistryV14 struct {
 	Types []PortableType
 }
@@ -138,6 +147,30 @@ type StorageEntryMetadataV14 struct {
 	Docs     []Text
 }
 
+func (storage *StorageEntryMetadataV14) Decode(decoder scale.Decoder) error {
+	err := decoder.Decode(&storage.Name)
+	if err != nil {
+		return err
+	}
+
+	err = decoder.Decode(&storage.Modifier)
+	if err != nil {
+		return err
+	}
+
+	err = decoder.Decode(&storage.Type)
+	if err != nil {
+		return err
+	}
+
+	err = decoder.Decode(&storage.Fallback)
+	if err != nil {
+		return err
+	}
+
+	return decoder.Decode(&storage.Docs)
+}
+
 func (s StorageEntryMetadataV14) IsPlain() bool {
 	return s.Type.IsPlain
 }
@@ -179,6 +212,14 @@ func (s StorageEntryMetadataV14) Hashers() ([]hash.Hash, error) {
 type StorageMetadataV14 struct {
 	Prefix  Text
 	Entries []StorageEntryMetadataV14
+}
+
+func (storage *StorageMetadataV14) Decode(decoder scale.Decoder) error {
+	err := decoder.Decode(&storage.Prefix)
+	if err != nil {
+		return err
+	}
+	return decoder.Decode(&storage.Entries)
 }
 
 type PalletCallMetadataV14 struct {
@@ -425,7 +466,7 @@ func (m *MetadataV14) FindCallIndex(call string) (CallIndex, error) {
 		}
 		callType := mod.Calls.Type
 		for _, lookUp := range m.Lookup.Types {
-			if lookUp.Id == callType {
+			if lookUp.Id.Int64() == callType.Int64() {
 				if len(lookUp.Type.Def.AsVariant.Variants) > 0 {
 					for _, vars := range lookUp.Type.Def.AsVariant.Variants {
 						if string(vars.Name) == s[1] {

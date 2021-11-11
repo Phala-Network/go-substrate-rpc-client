@@ -24,7 +24,38 @@ func (cu32 *CompactU32) Decode(decoder scale.Decoder) error {
 	return nil
 }
 
-type Si1LookupTypeId CompactU32
+type Si1LookupTypeId big.Int
+
+func NewSi1LookupTypeID(value *big.Int) Si1LookupTypeId {
+	return Si1LookupTypeId(*value)
+}
+
+func NewSi1LookupTypeIDFromUInt(value uint64) Si1LookupTypeId {
+	return NewSi1LookupTypeID(new(big.Int).SetUint64(value))
+}
+
+func (d *Si1LookupTypeId) Int64() int64 {
+	i := big.Int(*d)
+	return i.Int64()
+}
+
+func (d *Si1LookupTypeId) Decode(decoder scale.Decoder) error {
+	ui, err := decoder.DecodeUintCompact()
+	if err != nil {
+		return err
+	}
+
+	*d = Si1LookupTypeId(*ui)
+	return nil
+}
+
+func (d Si1LookupTypeId) Encode(encoder scale.Encoder) error {
+	err := encoder.EncodeUintCompact(big.Int(d))
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 type Si1Path []Text
 
@@ -236,150 +267,87 @@ type Si1TypeDefArray struct {
 type Si1TypeDefTuple []Si1LookupTypeId
 
 type Si1TypeDefPrimitive struct {
-	IsBool bool
-	IsChar bool
-	IsStr  bool
-	IsU8   bool
-	IsU16  bool
-	IsU32  bool
-	IsU64  bool
-	IsU128 bool
-	IsU256 bool
-	IsI8   bool
-	IsI16  bool
-	IsI32  bool
-	IsI64  bool
-	IsI128 bool
-	IsI256 bool
+	Value string
 }
 
-func (m Si1TypeDefPrimitive) Encode(encoder scale.Encoder) error {
-	var err error
-	switch {
-	case m.IsBool:
-		err = encoder.PushByte(0)
-		if err != nil {
-			return err
-		}
-	case m.IsChar:
-		err = encoder.PushByte(1)
-		if err != nil {
-			return err
-		}
-	case m.IsStr:
-		err = encoder.PushByte(2)
-		if err != nil {
-			return err
-		}
-	case m.IsU8:
-		err = encoder.PushByte(3)
-		if err != nil {
-			return err
-		}
-	case m.IsU16:
-		err = encoder.PushByte(4)
-		if err != nil {
-			return err
-		}
-	case m.IsU32:
-		err = encoder.PushByte(5)
-		if err != nil {
-			return err
-		}
-	case m.IsU64:
-		err = encoder.PushByte(6)
-		if err != nil {
-			return err
-		}
-	case m.IsU128:
-		err = encoder.PushByte(7)
-		if err != nil {
-			return err
-		}
-	case m.IsU256:
-		err = encoder.PushByte(8)
-		if err != nil {
-			return err
-		}
-	case m.IsI8:
-		err = encoder.PushByte(9)
-		if err != nil {
-			return err
-		}
-	case m.IsI16:
-		err = encoder.PushByte(10)
-		if err != nil {
-			return err
-		}
-	case m.IsI32:
-		err = encoder.PushByte(11)
-		if err != nil {
-			return err
-		}
-	case m.IsI64:
-		err = encoder.PushByte(12)
-		if err != nil {
-			return err
-		}
-	case m.IsI128:
-		err = encoder.PushByte(13)
-		if err != nil {
-			return err
-		}
-	case m.IsI256:
-		err = encoder.PushByte(14)
-		if err != nil {
-			return err
-		}
-	default:
-		return fmt.Errorf("invalid variant for Si1TypeDefPrimitive")
-	}
-
-	return nil
-}
-
-func (m *Si1TypeDefPrimitive) Decode(decoder scale.Decoder) error {
-	tag, err := decoder.ReadOneByte()
+func (d *Si1TypeDefPrimitive) Decode(decoder scale.Decoder) error {
+	b, err := decoder.ReadOneByte()
 	if err != nil {
 		return err
 	}
-
-	switch tag {
+	switch b {
 	case 0:
-		m.IsBool = true
+		d.Value = "Bool"
 	case 1:
-		m.IsChar = true
+		d.Value = "Char"
 	case 2:
-		m.IsStr = true
+		d.Value = "Str"
 	case 3:
-		m.IsU8 = true
+		d.Value = "U8"
 	case 4:
-		m.IsU16 = true
+		d.Value = "U16"
 	case 5:
-		m.IsU32 = true
+		d.Value = "U32"
 	case 6:
-		m.IsU64 = true
+		d.Value = "U64"
 	case 7:
-		m.IsU128 = true
+		d.Value = "U128"
 	case 8:
-		m.IsU256 = true
+		d.Value = "U256"
 	case 9:
-		m.IsI8 = true
+		d.Value = "I8"
 	case 10:
-		m.IsI16 = true
+		d.Value = "I16"
 	case 11:
-		m.IsI32 = true
+		d.Value = "I32"
 	case 12:
-		m.IsI64 = true
+		d.Value = "I64"
 	case 13:
-		m.IsI128 = true
+		d.Value = "I128"
 	case 14:
-		m.IsI256 = true
+		d.Value = "I256"
 	default:
-		err = fmt.Errorf("invalid variant for Si1TypeDef: %v", tag)
+		return fmt.Errorf("Si1TypeDefPrimitive do not support this type: %d", b)
 	}
+	return nil
+}
 
-	return err
+func (d Si1TypeDefPrimitive) Encode(encoder scale.Encoder) error {
+	switch d.Value {
+	case "Bool":
+		return encoder.PushByte(0)
+	case "Char":
+		return encoder.PushByte(1)
+	case "Str":
+		return encoder.PushByte(2)
+	case "U8":
+		return encoder.PushByte(3)
+	case "U16":
+		return encoder.PushByte(4)
+	case "U32":
+		return encoder.PushByte(5)
+	case "U64":
+		return encoder.PushByte(6)
+	case "U128":
+		return encoder.PushByte(7)
+	case "U256":
+		return encoder.PushByte(8)
+	case "I8":
+		return encoder.PushByte(9)
+	case "I16":
+		return encoder.PushByte(10)
+	case "I32":
+		return encoder.PushByte(11)
+	case "I64":
+		return encoder.PushByte(12)
+	case "I128":
+		return encoder.PushByte(13)
+	case "I256":
+		return encoder.PushByte(14)
+	default:
+		//TODO(nuno): Not sure what to do
+		return nil
+	}
 }
 
 type Si1TypeDefCompact struct {
@@ -392,22 +360,24 @@ type Si1TypeDefBitSequence struct {
 }
 
 type Si1TypeDef struct {
-	IsComposite   bool
-	AsComposite   Si1TypeDefComposite
-	IsVariant     bool
-	AsVariant     Si1TypeDefVariant
-	IsSequence    bool
-	AsSequence    Si1TypeDefSequence
-	IsArray       bool
-	AsArray       Si1TypeDefArray
-	IsTuple       bool
-	AsTuple       Si1TypeDefTuple
-	IsPrimitive   bool
-	AsPrimitive   Si1TypeDefPrimitive
-	IsCompact     bool
-	AsCompact     Si1TypeDefCompact
-	IsBitSequence bool
-	AsBitSequence Si1TypeDefBitSequence
+	IsComposite          bool
+	AsComposite          Si1TypeDefComposite
+	IsVariant            bool
+	AsVariant            Si1TypeDefVariant
+	IsSequence           bool
+	AsSequence           Si1TypeDefSequence
+	IsArray              bool
+	AsArray              Si1TypeDefArray
+	IsTuple              bool
+	AsTuple              Si1TypeDefTuple
+	IsPrimitive          bool
+	AsPrimitive          Si1TypeDefPrimitive
+	IsCompact            bool
+	AsCompact            Si1TypeDefCompact
+	IsBitSequence        bool
+	AsBitSequence        Si1TypeDefBitSequence
+	IsHistoricMetaCompat bool
+	AsHistoricMetaCompat Type
 }
 
 func (m Si1TypeDef) Encode(encoder scale.Encoder) error {
@@ -485,6 +455,13 @@ func (m Si1TypeDef) Encode(encoder scale.Encoder) error {
 		if err != nil {
 			return err
 		}
+	case m.IsHistoricMetaCompat:
+		err := encoder.PushByte(8)
+		if err != nil {
+			return err
+		}
+		m.IsHistoricMetaCompat = true
+		return encoder.Encode(&m.AsHistoricMetaCompat)
 	default:
 		return fmt.Errorf("invalid variant for Si1TypeDef")
 	}
@@ -523,6 +500,9 @@ func (m *Si1TypeDef) Decode(decoder scale.Decoder) error {
 	case 7:
 		m.IsBitSequence = true
 		err = decoder.Decode(&m.AsBitSequence)
+	case 8:
+		m.IsHistoricMetaCompat = true
+		return decoder.Decode(&m.AsHistoricMetaCompat)
 	default:
 		err = fmt.Errorf("invalid variant for Si1TypeDef: %v", tag)
 	}
@@ -535,4 +515,20 @@ type Si1Type struct {
 	Params []Si1TypeParameter
 	Def    Si1TypeDef
 	Docs   []Text
+}
+
+func (d *Si1Type) Decode(decoder scale.Decoder) error {
+	err := decoder.Decode(&d.Path)
+	if err != nil {
+		return err
+	}
+	err = decoder.Decode(&d.Params)
+	if err != nil {
+		return err
+	}
+	err = decoder.Decode(&d.Def)
+	if err != nil {
+		return err
+	}
+	return decoder.Decode(&d.Docs)
 }
